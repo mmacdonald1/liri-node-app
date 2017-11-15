@@ -1,6 +1,3 @@
-var keys = require('./keys');
-//var tweetKeys = keys.twitterKeys;
-
 var cmd = process.argv[2];
 
 
@@ -25,13 +22,23 @@ switch (cmd) {
 }
 
 function tweet(){
+    var {twitterKeys} = require('./keys');
     var Twitter = require('twitter');
-    var tweetKeys = keys.twitterKeys;
+    var client = new Twitter({
+      consumer_key: twitterKeys.consumer_key,
+      consumer_secret: twitterKeys.consumer_secret,
+      access_token_key: twitterKeys.access_token_key,
+      access_token_secret: twitterKeys.access_token_secret,
+    });
     var params = {screen_name: 'nothisispatrik7', count:'10'};
-    tweetKeys.get('statuses/user_timeline', params, function(error, tweets, response) {
+    client.get('statuses/user_timeline', params, function(error, tweets, response) {
       if (!error) {
-        console.log(tweets);
+        for(i=0; i<tweets.length; i++){
+        console.log(tweets[i].text);
+        console.log(tweets[i].created_at);
+        }
       }
+        
     });
 
     }
@@ -42,27 +49,10 @@ function movie(){
 var request = require("request");
 
 // Store all of the arguments in an array
-var nodeArgs = process.argv;
+var nodeArgs = process.argv[3];
 
 // Create an empty variable for holding the movie name
-var movieName = "";
-
-// Loop through all the words in the node argument
-// And do a little for-loop magic to handle the inclusion of "+"s
-for (var i = 2; i < nodeArgs.length; i++) {
-
-  if (i > 2 && i < nodeArgs.length) {
-
-    movieName = movieName + "+" + nodeArgs[i];
-
-  }
-
-  else {
-
-    movieName += nodeArgs[i];
-
-  }
-}
+var movieName = nodeArgs;
 
 // Then run a request to the OMDB API with the movie specified
 var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
