@@ -9,7 +9,7 @@ switch (cmd) {
     break;
 
   case "spotify-this-song":
-    
+    music();
     break;
 
   case "movie-this":
@@ -17,7 +17,7 @@ switch (cmd) {
     break;
 
   case "do-what-it-says":
-
+    doit();
     break;
 }
 
@@ -43,8 +43,32 @@ function tweet(){
 
     }
 
+function music(doitSong){
+    var {spotifyKeys} = require('./keys');
+    var Spotify = require('node-spotify-api');
+    var spotify = new Spotify({
+      id: spotifyKeys.client_id,
+      secret: spotifyKeys.client_secret,
+    }); 
+    var question = doitSong ? doitSong : process.argv[3];
+    if (!question){
+        question = "The Sign";
+    }
+    spotify.search({type:'track', query:question, limit:1}, function(err, data){
+    if (err) {
+        return console.log('Error occurred: ' + err);
+      }
+    console.log(data.tracks.items[0].album.artists[0].name);
+    console.log(data.tracks.items[0].name);
+    console.log(data.tracks.items[0].album.name);
+    console.log(data.tracks.items[0].album.href);
+     
+    });
+    
+}
 
-function movie(){
+
+function movie(doitMovie){
 // Include the request npm package (Don't forget to run "npm install request" in this folder first!)
 var request = require("request");
 
@@ -52,7 +76,11 @@ var request = require("request");
 var nodeArgs = process.argv[3];
 
 // Create an empty variable for holding the movie name
-var movieName = nodeArgs;
+var movieName = doitMovie ? doitMovie : nodeArgs;
+    
+if (!movieName){
+    movieName = "Mr.Nobody";
+}
 
 // Then run a request to the OMDB API with the movie specified
 var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
@@ -78,4 +106,32 @@ request(queryUrl, function(error, response, body) {
       
   }
 });
+}
+
+function doit(){
+    var fs = require("fs");
+    fs.readFile("random.txt", "utf8", function(err, data) {
+        if (err) {
+          return console.log(err);
+        }
+
+        // Break down all the numbers inside
+        data = data.split(",");
+        console.log(data[0]);
+        // to the command line: `node liri.js data[0] data[1]`
+        switch (data[0]) {
+          case "my-tweets":
+            tweet();
+            break;
+
+          case "spotify-this-song":
+            music(data[1]);
+            break;
+
+          case "movie-this":
+            movie(data[1]);
+            break;
+        }
+                
+    });
 }
